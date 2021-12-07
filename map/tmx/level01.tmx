@@ -91,7 +91,7 @@
 </data>
  </layer>
  <objectgroup color="#aa0000" id="3" name="solid">
-  <object id="3" x="177.333" y="226" width="30" height="28">
+  <object id="3" x="175.958" y="223.625" width="32.125" height="32">
    <properties>
     <property name="collidable" type="bool" value="true"/>
    </properties>
@@ -101,17 +101,17 @@
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="5" x="159.333" y="257.333" width="48" height="2.66667">
+  <object id="5" x="159.833" y="255.958" width="48" height="5.04167">
    <properties>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="6" x="112" y="272.667" width="48" height="2.66667">
+  <object id="6" x="112" y="271.542" width="48" height="5.91667">
    <properties>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="7" x="62.6667" y="288.667" width="48" height="2.66667">
+  <object id="7" x="63.9167" y="287.5" width="48" height="5.83334">
    <properties>
     <property name="collidable" type="bool" value="true"/>
    </properties>
