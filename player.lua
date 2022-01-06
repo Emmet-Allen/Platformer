@@ -8,6 +8,9 @@ function Player:load()
    self.xVel = 0
    self.yVel = 0
 
+   --For width of frames
+   self.frameWidth = 32
+
     -- Used to determine player on X
     -- In pixels: 200 / 4000 = 0.05 sec to go | 200 / 3500 = ~0.6 sec to stop
    self.maxSpeed = 200
@@ -22,6 +25,9 @@ function Player:load()
    self.jumpCounter = 0
    self.maxJumps = 2
 
+   -- Elapsed time for frame movement
+   self.elapsedTime = 0
+
    -- Load Player Grahpic
    self:loadAssets()
 
@@ -33,46 +39,44 @@ function Player:load()
    self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
 end
 
-function Player:loadAssets()
-   love.graphics.setDefaultFilter('nearest', 'nearest')
-   self.idleAtlas = love.graphics.newImage("assets/Main Characters/Ninja Frog/Idle (32x32).png")
-   -- self.idleFrames = {}
-   -- self.frameWidth = 32
-   -- self.frameHeight = 32
-   
-   --for i=0,10 do
-   --   table.insert(self.idleFrames, love.graphics.newQuad( i * self.frameWidth, self.y, self.frameWidth, self.frameHeight, self.idleAtlas:getWidth(), self.idleAtlas:getHeight() ))
-   --   self.currentFrame = i
-   --end
-   -- self.idleSprite = love.graphics.newQuad(self.x, self.y, self.width, self.height, self.idleAtlas:getDimensions())
-   -- self.idleFrames = {total = 11, current = 1, delay = 0.20, timePassed = 0}
-   --  for frame = 1, self.idleFrames.current do
-   --    --TODO: Figure out how quads work in animation https://sheepolution.com/learn/book/17
-   --  self.idleFrames[frame] = love.graphics.newQuad( (frame + 1) * self.width,  0, self.width, self.height, self.idleAtlas:getDimensions())
-   --  self.currentFrame = frame
-   -- end
-   self.frames = {}
-   self.frames[1] = love.graphics.newQuad(self.x, self.y, self.width, self.height, self.idleAtlas:getDimensions())
-   self.frames[2] = love.graphics.newQuad(32 , self.y, self.width, self.height, self.idleAtlas:getDimensions())
-   self.frames[3] = love.graphics.newQuad(64, self.y, self.width, self.height, self.idleAtlas:getDimensions())
-   self.frames[4] = love.graphics.newQuad(96 , self.y, self.width, self.height, self.idleAtlas:getDimensions())
-   self.currentFrame = 1
-   self.idleFrame = self.frames[self.currentFrame]
+-- TODO: Create a function strictly for idle animation, so that we can pass it to loadAssets()
+-- function Player:idleStatus()
+--    love.graphics.setDefaultFilter('nearest', 'nearest')
+--    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
+--    self.frames = {}
 
+--    for i=0,11 do
+--      table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
+--      self.currentFrame = i
+--    end   
+
+--    self.idleFrame = self.frames[self.currentFrame]
+-- end
+
+function Player:loadAssets()
+   self.idleStatus()
+   love.graphics.setDefaultFilter('nearest', 'nearest')
+   self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
+   self.frames = {}
+
+   for i=0,11 do
+     table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
+     self.currentFrame = i
+   end   
+
+   self.idleFrame = self.frames[self.currentFrame]
 end
 
 function Player:idleTime(dt)
-   local elapsedTime = 0
-
-   elapsedTime = elapsedTime + dt
-   if(elapsedTime > 1) then
-      if(self.currentFrame < 5) then
+   self.elapsedTime = self.elapsedTime + dt
+   if(self.elapsedTime > 1) then
+      if(self.currentFrame < 7) then
          self.currentFrame = self.currentFrame + 1
       else
          self.currentFrame = 1
       end
       self.idleFrame = self.frames[self.currentFrame]
-      elapsedTime = 0
+      self.elapsedTime= 0
    end
 end
 
@@ -82,7 +86,6 @@ function Player:update(dt)
    self:move(dt)
    self:applyGravity(dt)
    self:idleTime(dt)
-   --self.loadAssets.idleFrames.timePassed = self.loadAssets.idleFrames.timePassed + dt
 end
 
 
@@ -177,7 +180,8 @@ function Player:draw()
   -- love.graphics.draw(self.idleAtlas, self.idleFrames[(self.currentFrame)], self.height, self.width)
 
   --Okay This Draws the FIRST FRAME! WOOOT
-   love.graphics.draw(self.idleAtlas, self.idleFrame, self.x - self.width + 18, self.y - self.height + 15)
+   love.graphics.draw(self.idleAtlas,  self.idleFrame, self.x - self.width + 18, self.y - self.height + 15)
+   --love.graphics.draw(self.idleAtlas, self.activeFrame)
 --Draws All Frames
 --love.graphics.draw(self.idleAtlas, self.x - self.width + 18, self.y - self.height + 18) --, self.width, self.height)
 end
