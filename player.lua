@@ -54,7 +54,6 @@ end
 -- end
 
 function Player:loadAssets()
-   self.idleStatus()
    love.graphics.setDefaultFilter('nearest', 'nearest')
    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
    self.frames = {}
@@ -176,12 +175,6 @@ function Player:endContact(a, b, collision)
 end
 
 function Player:draw()
-  -- love.graphics.draw(self.idleAnimation) --, self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
-  -- love.graphics.draw(self.idleAtlas, self.idleFrames[(self.currentFrame)], self.height, self.width)
-
-  --Okay This Draws the FIRST FRAME! WOOOT
+  --Draws Idle Animation
    love.graphics.draw(self.idleAtlas,  self.idleFrame, self.x - self.width + 18, self.y - self.height + 15)
-   --love.graphics.draw(self.idleAtlas, self.activeFrame)
---Draws All Frames
---love.graphics.draw(self.idleAtlas, self.x - self.width + 18, self.y - self.height + 18) --, self.width, self.height)
 end
