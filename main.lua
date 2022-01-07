@@ -1,5 +1,6 @@
 local STI = require("sti")
 require("player")
+love.graphics.setDefaultFilter('nearest', 'nearest')
 
 function love.load()
     Map = STI("map/level01.lua", {"box2d"})
@@ -7,7 +8,6 @@ function love.load()
     World:setCallbacks(beginContact, endContact)
     Map:box2d_init(World)
     Map.layers.solid.visible = false --removes collison hi-lite
-    -- background = love.graphics.newImage("assets/Background/Blue.png") My background is built within the tile set
     Player:load()
 end
 

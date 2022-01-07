@@ -16,6 +16,7 @@ function Player:load()
    self.maxSpeed = 200
    self.acceleration = 4000
    self.friction = 3500
+   self.direction = "right"
 
     -- Used to determine player on Y
    self.gravity = 1500
@@ -25,8 +26,12 @@ function Player:load()
    self.jumpCounter = 0
    self.maxJumps = 2
 
-   -- Elapsed time for frame movement
+   -- Time manupulations
    self.elapsedTime = 0
+   self.dtMULTIPLIER = 11
+
+   --Frame Counters
+   self.TOTALIDLEFRAMES = 11
 
    -- Load Player Grahpic
    self:loadAssets()
@@ -54,11 +59,10 @@ end
 -- end
 
 function Player:loadAssets()
-   love.graphics.setDefaultFilter('nearest', 'nearest')
    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
    self.frames = {}
 
-   for i=0,11 do
+   for i=0,self.TOTALIDLEFRAMES do
      table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
      self.currentFrame = i
    end   
@@ -66,10 +70,10 @@ function Player:loadAssets()
    self.idleFrame = self.frames[self.currentFrame]
 end
 
-function Player:idleTime(dt)
-   self.elapsedTime = self.elapsedTime + dt
+function Player:idleAnim(dt)
+   self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
    if(self.elapsedTime > 1) then
-      if(self.currentFrame < 7) then
+      if(self.currentFrame < self.TOTALIDLEFRAMES) then
          self.currentFrame = self.currentFrame + 1
       else
          self.currentFrame = 1
@@ -81,16 +85,26 @@ end
 
 
 function Player:update(dt)
+   self:idleAnim(dt)
+   self:setDirection()
    self:syncPhysics()
    self:move(dt)
    self:applyGravity(dt)
-   self:idleTime(dt)
 end
 
 
 function Player:applyGravity(dt)
    if not self.grounded then
       self.yVel = self.yVel + self.gravity * dt
+   end
+end
+
+function Player:setDirection()
+   if self.xVel < 0 then
+      self.direction = "left"
+   else if self.xVel > 0 then
+      self.direction = "right"
+   end
    end
 end
 
@@ -176,5 +190,10 @@ end
 
 function Player:draw()
   --Draws Idle Animation
-   love.graphics.draw(self.idleAtlas,  self.idleFrame, self.x - self.width + 18, self.y - self.height + 15)
+   local scaleX = 1
+   if self.direction == "left" then
+      scaleX = -1
+   end
+   -- THIS IS Correct
+  love.graphics.draw(self.idleAtlas, self.idleFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
 end
