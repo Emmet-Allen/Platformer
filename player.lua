@@ -32,6 +32,7 @@ function Player:load()
 
    --Frame Counters
    self.TOTALIDLEFRAMES = 11
+   self.TOTALRUNFRAMES = 12
 
    -- Load Player Grahpic
    self:loadAssets()
@@ -44,52 +45,60 @@ function Player:load()
    self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
 end
 
--- TODO: Create a function strictly for idle animation, so that we can pass it to loadAssets()
--- function Player:idleStatus()
---    love.graphics.setDefaultFilter('nearest', 'nearest')
---    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
---    self.frames = {}
-
---    for i=0,11 do
---      table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
---      self.currentFrame = i
---    end   
-
---    self.idleFrame = self.frames[self.currentFrame]
--- end
 
 function Player:loadAssets()
    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
+   self.runAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Run (32x32).png")
    self.frames = {}
 
    for i=0,self.TOTALIDLEFRAMES do
      table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
-     self.currentFrame = i
-   end   
-
-   self.idleFrame = self.frames[self.currentFrame]
+     self.idlecurrentFrame = i
+   end
+   for i=1,self.TOTALRUNFRAMES do
+      table.insert(self.frames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.runAtlas:getDimensions()))
+      self.runcurrentFrame = i
+   end
+   self.runFrame = self.frames[self.runcurrentFrame]
+   self.idleFrame = self.frames[self.idlecurrentFrame]
 end
 
 function Player:idleAnim(dt)
    self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
    if(self.elapsedTime > 1) then
-      if(self.currentFrame < self.TOTALIDLEFRAMES) then
-         self.currentFrame = self.currentFrame + 1
+      if(self.idlecurrentFrame < self.TOTALIDLEFRAMES) then
+         self.idlecurrentFrame = self.idlecurrentFrame + 1
       else
-         self.currentFrame = 1
+         self.idlecurrentFrame = 1
       end
-      self.idleFrame = self.frames[self.currentFrame]
-      self.elapsedTime= 0
+      self.idleFrame = self.frames[self.idlecurrentFrame]
+      self.elapsedTime = 0
    end
 end
 
+function Player:runAnim(dt)
+   self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
+   if(self.elapsedTime > 1) then
+      if(self.runcurrentFrame < self.TOTALRUNFRAMES) then
+         self.runcurrentFrame = self.runcurrentFrame + 1
+      else
+         self.runcurrentFrame = 1
+      end
+      self.runFrame = self.frames[self.runcurrentFrame]
+      self.elapsedTime = 0
+   end
+end
 
 function Player:update(dt)
-   self:idleAnim(dt)
    self:setDirection()
    self:syncPhysics()
    self:move(dt)
    self:applyGravity(dt)
+   if (love.keyboard.isDown("d", "right")) then
+      self:runAnim(dt)
+   else
+      self:idleAnim(dt)
+   end
 end
 
 
@@ -195,5 +204,9 @@ function Player:draw()
       scaleX = -1
    end
    -- THIS IS Correct
-  love.graphics.draw(self.idleAtlas, self.idleFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
+  if (love.keyboard.isDown("d", "right")) then
+   love.graphics.draw(self.runAtlas, self.runFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
+  else
+   love.graphics.draw(self.idleAtlas, self.idleFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
+  end
 end
