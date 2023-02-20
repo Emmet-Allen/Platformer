@@ -52,7 +52,7 @@ function Player:loadAssets()
    self.frames = {}
 
    for i=0,self.TOTALIDLEFRAMES do
-     table.insert(self.frames, love.graphics.newQuad( i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
+     table.insert(self.frames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
      self.idlecurrentFrame = i
    end
    for i=1,self.TOTALRUNFRAMES do
@@ -79,7 +79,8 @@ end
 function Player:runAnim(dt)
    self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
    if(self.elapsedTime > 1) then
-      if(self.runcurrentFrame < self.TOTALRUNFRAMES) then
+      if(self.runcurrentFrame < self.TOTALRUNFRAMES - 1) then
+         -- increases pace of frames
          self.runcurrentFrame = self.runcurrentFrame + 1
       else
          self.runcurrentFrame = 1
@@ -94,7 +95,7 @@ function Player:update(dt)
    self:syncPhysics()
    self:move(dt)
    self:applyGravity(dt)
-   if (love.keyboard.isDown("d", "right")) then
+   if (love.keyboard.isDown("d", "right") or love.keyboard.isDown("a", "left")) then
       self:runAnim(dt)
    else
       self:idleAnim(dt)
@@ -204,8 +205,9 @@ function Player:draw()
       scaleX = -1
    end
    -- THIS IS Correct
-  if (love.keyboard.isDown("d", "right")) then
+  if (love.keyboard.isDown("d", "right") or love.keyboard.isDown("a", "left")) then
    love.graphics.draw(self.runAtlas, self.runFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
+
   else
    love.graphics.draw(self.idleAtlas, self.idleFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
   end
