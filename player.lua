@@ -10,7 +10,7 @@ function Player:load()
 
    --For width of frames
    self.frameWidth = 32
-
+   
     -- Used to determine player on X
     -- In pixels: 200 / 4000 = 0.05 sec to go | 200 / 3500 = ~0.6 sec to stop
    self.maxSpeed = 200
@@ -47,20 +47,24 @@ end
 
 
 function Player:loadAssets()
+   -- EACH ASSET NEEDS AN ATLAS AND ITS OWN QUAD TABLE!!!
+   -- THEY ALSO NEED THEIR OWN ANIMATION FUNCTION AND DRAW FUNCTION
    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
    self.runAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Run (32x32).png")
-   self.frames = {}
+   self.idleFrames = {}  
+   self.runFrames = {}
 
    for i=0,self.TOTALIDLEFRAMES do
-     table.insert(self.frames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
+     table.insert(self.idleFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
      self.idlecurrentFrame = i
    end
-   for i=1,self.TOTALRUNFRAMES do
-      table.insert(self.frames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.runAtlas:getDimensions()))
+   for i=0,self.TOTALRUNFRAMES do
+      --table.insert(self.frames, love.graphics.newQuad(i * self.runFrameWidth, self.y, self.width / 2, self.height, self.runAtlas:getDimensions()))
+      table.insert( self.runFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.runAtlas:getDimensions()))
       self.runcurrentFrame = i
    end
-   self.runFrame = self.frames[self.runcurrentFrame]
-   self.idleFrame = self.frames[self.idlecurrentFrame]
+   self.runFrame =  self.runFrames[self.runcurrentFrame]
+   self.idleFrame = self.idleFrames[self.idlecurrentFrame]
 end
 
 function Player:idleAnim(dt)
@@ -71,7 +75,7 @@ function Player:idleAnim(dt)
       else
          self.idlecurrentFrame = 1
       end
-      self.idleFrame = self.frames[self.idlecurrentFrame]
+      self.idleFrame = self.idleFrames[self.idlecurrentFrame]
       self.elapsedTime = 0
    end
 end
@@ -85,7 +89,7 @@ function Player:runAnim(dt)
       else
          self.runcurrentFrame = 1
       end
-      self.runFrame = self.frames[self.runcurrentFrame]
+      self.runFrame =  self.runFrames[self.runcurrentFrame]
       self.elapsedTime = 0
    end
 end
