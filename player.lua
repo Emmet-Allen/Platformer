@@ -33,6 +33,9 @@ function Player:load()
    --Frame Counters
    self.TOTALIDLEFRAMES = 11
    self.TOTALRUNFRAMES = 12
+   self.TOTALJUMPFRAMES = 1
+   self.TOTALDOUBLEJUMPFRAMES = 6
+   self.TOTALFALLFRAMES = 1
 
    -- Load Player Grahpic
    self:loadAssets()
@@ -46,25 +49,48 @@ function Player:load()
 end
 
 
+
 function Player:loadAssets()
    -- EACH ASSET NEEDS AN ATLAS AND ITS OWN QUAD TABLE!!!
    -- THEY ALSO NEED THEIR OWN ANIMATION FUNCTION AND DRAW FUNCTION
    self.idleAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Idle (32x32).png")
    self.runAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Run (32x32).png")
+   self.jumpAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Jump (32x32).png")
+   self.doubleJumpAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Double Jump (32x32).png")
+   self.fallAtlas = love.graphics.newImage("assets/Main Characters/Mask Dude/Fall (32x32).png")
    self.idleFrames = {}  
    self.runFrames = {}
+   self.jumpFrames = {}
+   self.doubleJumpFrames = {}
+   self.fallFrames = {}
 
+   -- LOADS ASSETS FROM ATLAS TO {this}Frame table
    for i=0,self.TOTALIDLEFRAMES do
      table.insert(self.idleFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.idleAtlas:getDimensions()))
      self.idlecurrentFrame = i
    end
    for i=0,self.TOTALRUNFRAMES do
-      --table.insert(self.frames, love.graphics.newQuad(i * self.runFrameWidth, self.y, self.width / 2, self.height, self.runAtlas:getDimensions()))
       table.insert( self.runFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.runAtlas:getDimensions()))
       self.runcurrentFrame = i
    end
+   for i=0,self.TOTALJUMPFRAMES do
+      table.insert(self.jumpFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.jumpAtlas:getDimensions()))
+      self.jumpcurrentFrame = i
+    end
+    for i=0,self.TOTALDOUBLEJUMPFRAMES do
+      table.insert(self.doubleJumpFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.doubleJumpAtlas:getDimensions()))
+      self.doublejumpcurrentFrame = i
+    end
+    for i=0,self.TOTALFALLFRAMES do
+      table.insert(self.fallFrames, love.graphics.newQuad(i * self.frameWidth, self.y, self.width, self.height, self.fallAtlas:getDimensions()))
+      self.fallcurrentFrame = i
+    end
+
    self.runFrame =  self.runFrames[self.runcurrentFrame]
    self.idleFrame = self.idleFrames[self.idlecurrentFrame]
+   self.jumpFrame = self.jumpFrames[self.jumpcurrentFrame]
+   self.doubleJumpFrame = self.doubleJumpFrames[self.doublejumpcurrentFrame]
+   self.fallFrame = self.fallFrames[self.fallcurrentFrame]
 end
 
 function Player:idleAnim(dt)
@@ -83,13 +109,58 @@ end
 function Player:runAnim(dt)
    self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
    if(self.elapsedTime > 1) then
-      if(self.runcurrentFrame < self.TOTALRUNFRAMES - 1) then
+      if( (self.runcurrentFrame < self.TOTALRUNFRAMES - 1) and self.grounded == true) then
          -- increases pace of frames
          self.runcurrentFrame = self.runcurrentFrame + 1
       else
          self.runcurrentFrame = 1
       end
       self.runFrame =  self.runFrames[self.runcurrentFrame]
+      self.elapsedTime = 0
+   end
+end
+
+function Player:jumpAnim(dt)
+   self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
+   if(self.elapsedTime > 1) then
+      if( (self.jumpcurrentFrame < self.TOTALJUMPFRAMES) and self.grounded == false) then
+         -- increases pace of frames
+         self.jumpcurrentFrame = self.jumpcurrentFrame
+      else
+         self.jumpcurrentFrame = 1
+      end
+      self.jumpFrame =  self.jumpFrames[self.jumpcurrentFrame]
+      self.elapsedTime = 0
+   end
+end
+
+--TODO: Figure out why this function goes out of bounds in frames table
+function Player:doubleJumpAnim(dt)
+   self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
+   if(self.elapsedTime > 1) then
+      if( (self.doublejumpcurrentFrame < self.TOTALDOUBLEJUMPFRAMES) ) then
+         -- increases pace of frames
+         while(self.jumpCounter > 1) do
+            self.doublejumpcurrentFrame = self.doublejumpcurrentFrame + 1
+         end
+      else
+         self.doublejumpcurrentFrame = 1
+      end
+      self.doubleJumpFrame = self.doubleJumpFrames[self.doublejumpcurrentFrame]
+      self.elapsedTime = 0
+   end
+end
+
+function Player:fallAnim(dt)
+   self.elapsedTime = self.elapsedTime + dt * self.dtMULTIPLIER
+   if(self.elapsedTime > 1) then
+      if( (self.fallcurrentFrame < self.TOTALFALLFRAMES) and (self.grounded == false and self.jumpAmount < 1)) then
+         -- increases pace of frames
+         self.fallcurrentFrame = self.fallcurrentFrame
+      else
+         self.jumpcurrentFrame = 1
+      end
+      self.fallFrame =  self.fallFrames[self.currentFrame]
       self.elapsedTime = 0
    end
 end
@@ -101,6 +172,10 @@ function Player:update(dt)
    self:applyGravity(dt)
    if (love.keyboard.isDown("d", "right") or love.keyboard.isDown("a", "left")) then
       self:runAnim(dt)
+   elseif(love.keyboard.isDown("w", "up")) then
+      self:jumpAnim(dt)
+   elseif( (love.keyboard.isDown("w", "up") and self.jumpCounter > 1) ) then
+      self.doubleJumpAnim(dt)
    else
       self:idleAnim(dt)
    end
@@ -209,10 +284,13 @@ function Player:draw()
       scaleX = -1
    end
    -- THIS IS Correct
-  if (love.keyboard.isDown("d", "right") or love.keyboard.isDown("a", "left")) then
+  if ( (love.keyboard.isDown("d", "right") or love.keyboard.isDown("a", "left")) and self.grounded == true) then
    love.graphics.draw(self.runAtlas, self.runFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
-
-  else
+  elseif (love.keyboard.isDown("w", "up")) then
+   love.graphics.draw(self.jumpAtlas, self.jumpFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
+  elseif ( (love.keyboard.isDown("w", "up") and self.jumpCounter > 1)) then
+      love.graphics.draw(self.doubleJumpAtlas, self.doubleJumpFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)  
+   else
    love.graphics.draw(self.idleAtlas, self.idleFrame, self.x, self.y - self.height + 15, 0, scaleX, 1, self.width / 2, 0)
   end
 end
