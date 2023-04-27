@@ -140,9 +140,7 @@ function Player:doubleJumpAnim(dt)
    if(self.elapsedTime > 1) then
       if( (self.doublejumpcurrentFrame < self.TOTALDOUBLEJUMPFRAMES) ) then
          -- increases pace of frames
-         while(self.jumpCounter > 1) do
             self.doublejumpcurrentFrame = self.doublejumpcurrentFrame + 1
-         end
       else
          self.doublejumpcurrentFrame = 1
       end
